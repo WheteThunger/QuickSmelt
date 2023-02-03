@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos", "5.1.6")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.7")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -273,6 +273,33 @@ namespace Oxide.Plugins
 
             private Dictionary<string, float> _outputModifiers;
 
+            private IOEntity SpawnedIO
+            {
+                get
+                {
+                    foreach (var child in Furnace.children)
+                    {
+                        var childFurnaceIO = child as ElectricFurnaceIO;
+                        if ((object)childFurnaceIO != null)
+                            return childFurnaceIO;
+                    }
+
+                    return null;
+                }
+            }
+
+            private bool CanRunWithNoFuel
+            {
+                get
+                {
+                    var electricOven = Furnace as ElectricOven;
+                    if ((object)electricOven == null)
+                        return false;
+
+                    return SpawnedIO?.IsPowered() ?? false;
+                }
+            }
+
             private float OutputMultiplier(string shortname)
             {
                 float modifier;
@@ -374,7 +401,7 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                if (itemBurnable == null)
+                if (itemBurnable == null && !CanRunWithNoFuel)
                 {
                     StopCooking();
                     return;
@@ -399,18 +426,21 @@ namespace Oxide.Plugins
                     slot.SendMessage("Cook", 0.5f, SendMessageOptions.DontRequireReceiver);
                 }
 
-                var burnable = itemBurnable.info.GetComponent<ItemModBurnable>();
-                itemBurnable.fuel -= 0.5f * (Furnace.cookingTemperature / 200f) * _fuelSpeedMultiplier;
-
-                if (!itemBurnable.HasFlag(global::Item.Flag.OnFire))
+                if (itemBurnable != null)
                 {
-                    itemBurnable.SetFlag(global::Item.Flag.OnFire, true);
-                    itemBurnable.MarkDirty();
-                }
+                    var burnable = itemBurnable.info.GetComponent<ItemModBurnable>();
+                    itemBurnable.fuel -= 0.5f * (Furnace.cookingTemperature / 200f) * _fuelSpeedMultiplier;
 
-                if (itemBurnable.fuel <= 0f)
-                {
-                    ConsumeFuel(itemBurnable, burnable);
+                    if (!itemBurnable.HasFlag(global::Item.Flag.OnFire))
+                    {
+                        itemBurnable.SetFlag(global::Item.Flag.OnFire, true);
+                        itemBurnable.MarkDirty();
+                    }
+
+                    if (itemBurnable.fuel <= 0f)
+                    {
+                        ConsumeFuel(itemBurnable, burnable);
+                    }
                 }
 
                 Interface.CallHook("OnOvenCooked", this, itemBurnable, slot);
@@ -536,7 +566,7 @@ namespace Oxide.Plugins
 
             public void StartCooking()
             {
-                if (FindBurnable() == null)
+                if (!CanRunWithNoFuel && FindBurnable() == null)
                 {
                     PrintDebug("No burnable.");
                     return;
