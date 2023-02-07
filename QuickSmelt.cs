@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.7")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.8")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -203,6 +203,14 @@ namespace Oxide.Plugins
                 return;
 
             oven.gameObject.AddComponent<FurnaceController>();
+        }
+
+        // Electric furnaces can be started via electricity.
+        // Normal furnaces can be started via igniter.
+        private object OnOvenStart(StorageContainer oven)
+        {
+            oven.gameObject.GetComponent<FurnaceController>().StartCooking();
+            return false;
         }
 
         private object OnOvenToggle(StorageContainer oven, BasePlayer player)
