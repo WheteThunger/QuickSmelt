@@ -17,20 +17,21 @@ https://umod.org/plugins/quick-smelt
 
 The following prefab short names are valid in the config.
 
-- `bbq.static`
-- `bbq.static_hidden`
-- `campfire_static`
-- `furnace_static`
-- `hobobarrel_static`
-- `small_refinery_static`
+- `ackolantern.angry`
 - `bbq.deployed`
+- `bbq.static_hidden`
+- `bbq.static`
+- `campfire_static`
 - `campfire`
+- `cursedcauldron.deployed`
+- `electricfurnace.deployed`
 - `fireplace.deployed`
+- `furnace_static`
 - `furnace.large`
 - `furnace`
-- `ackolantern.angry`
+- `hobobarrel_static`
+- `hobobarrel.deployed`
 - `jackolantern.happy`
 - `refinery_small_deployed`
-- `cursedcauldron.deployed`
 - `skull_fire_pit`
-- `hobobarrel.deployed`
+- `small_refinery_static`
