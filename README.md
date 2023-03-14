@@ -17,7 +17,6 @@ https://umod.org/plugins/quick-smelt
 
 The following prefab short names are valid in the config.
 
-- `ackolantern.angry`
 - `bbq.deployed`
 - `bbq.static_hidden`
 - `bbq.static`
@@ -31,6 +30,7 @@ The following prefab short names are valid in the config.
 - `furnace`
 - `hobobarrel_static`
 - `hobobarrel.deployed`
+- `jackolantern.angry`
 - `jackolantern.happy`
 - `refinery_small_deployed`
 - `skull_fire_pit`
