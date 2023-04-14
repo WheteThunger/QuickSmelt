@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.9")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.10")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -281,6 +281,8 @@ namespace Oxide.Plugins
 
             private Dictionary<string, float> _outputModifiers;
 
+            private List<Item> _itemsToCook = new List<Item>();
+
             private float OutputMultiplier(string shortname)
             {
                 float modifier;
@@ -465,21 +467,18 @@ namespace Oxide.Plugins
 
             private void SmeltItems()
             {
-                var itemsBeingCooked = 0;
+                _itemsToCook.Clear();
+
                 foreach (var item in Furnace.inventory.itemList)
                 {
                     if (item.HasFlag(global::Item.Flag.Cooking))
                     {
-                        itemsBeingCooked++;
+                        _itemsToCook.Add(item);
                     }
                 }
 
-                if (itemsBeingCooked == 0)
-                    return;
-
-                for (var i = 0; i < Furnace.inventory.itemList.Count; i++)
+                foreach (var item in _itemsToCook)
                 {
-                    var item = Furnace.inventory.itemList[i];
                     if (item == null || !item.IsValid())
                         continue;
 
@@ -501,10 +500,6 @@ namespace Oxide.Plugins
                         item.SetFlag(global::Item.Flag.Cooking, false);
                         item.MarkDirty();
 
-                        itemsBeingCooked--;
-                        if (itemsBeingCooked <= 0)
-                            return;
-
                         continue;
                     }
 
@@ -514,7 +509,7 @@ namespace Oxide.Plugins
                         item.MarkDirty();
                     }
 
-                    item.cookTimeLeft -= 0.5f * _oven.GetSmeltingSpeed() / itemsBeingCooked;
+                    item.cookTimeLeft -= 0.5f * _oven.GetSmeltingSpeed() / _itemsToCook.Count;
                     if (item.cookTimeLeft > 0)
                     {
                         item.MarkDirty();
@@ -551,6 +546,8 @@ namespace Oxide.Plugins
 
                     StopCooking();
                 }
+
+                _itemsToCook.Clear();
             }
 
             public void StartCooking()
