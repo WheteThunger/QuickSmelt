@@ -439,7 +439,7 @@ namespace Oxide.Plugins
                 {
                     var def = burnable.byproductItem;
                     var item = ItemManager.Create(def,
-                        (int)(burnable.byproductAmount * OutputMultiplier(def.shortname) * _speedMultiplier)); // It's fuel multiplier
+                        (int)(burnable.byproductAmount * OutputMultiplier(def.shortname) * Mathf.Min(_speedMultiplier, fuel.amount))); // It's fuel multiplier
 
                     if (!item.MoveToContainer(Furnace.inventory))
                     {
