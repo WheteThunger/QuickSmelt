@@ -281,33 +281,6 @@ namespace Oxide.Plugins
 
             private Dictionary<string, float> _outputModifiers;
 
-            private IOEntity SpawnedIO
-            {
-                get
-                {
-                    foreach (var child in Furnace.children)
-                    {
-                        var childFurnaceIO = child as ElectricFurnaceIO;
-                        if ((object)childFurnaceIO != null)
-                            return childFurnaceIO;
-                    }
-
-                    return null;
-                }
-            }
-
-            private bool CanRunWithNoFuel
-            {
-                get
-                {
-                    var electricOven = Furnace as ElectricOven;
-                    if ((object)electricOven == null)
-                        return false;
-
-                    return SpawnedIO?.IsPowered() ?? false;
-                }
-            }
-
             private float OutputMultiplier(string shortname)
             {
                 float modifier;
@@ -409,7 +382,7 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                if (itemBurnable == null && !CanRunWithNoFuel)
+                if (itemBurnable == null && !Furnace.CanRunWithNoFuel)
                 {
                     StopCooking();
                     return;
@@ -574,7 +547,7 @@ namespace Oxide.Plugins
 
             public void StartCooking()
             {
-                if (!CanRunWithNoFuel && FindBurnable() == null)
+                if (!Furnace.CanRunWithNoFuel && FindBurnable() == null)
                 {
                     PrintDebug("No burnable.");
                     return;
