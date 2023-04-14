@@ -474,6 +474,9 @@ namespace Oxide.Plugins
                     }
                 }
 
+                if (itemsBeingCooked == 0)
+                    return;
+
                 for (var i = 0; i < Furnace.inventory.itemList.Count; i++)
                 {
                     var item = Furnace.inventory.itemList[i];
@@ -497,6 +500,11 @@ namespace Oxide.Plugins
 
                         item.SetFlag(global::Item.Flag.Cooking, false);
                         item.MarkDirty();
+
+                        itemsBeingCooked--;
+                        if (itemsBeingCooked <= 0)
+                            return;
+
                         continue;
                     }
 
