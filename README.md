@@ -9,6 +9,7 @@ https://umod.org/plugins/quick-smelt
 - Multipliers are baselined against vanilla
 - Works with electric furnaces
 - Furnaces started via electricity or igniters will function the same as furnaces started directly by a player (uMod version will not detect this, causing furnaces to use vanilla rates in those cases)
+- The `OnOvenCook` and `OnOvenCooked` hooks are called correctly, allowing for compatibility with other plugins
 - Increasing speed does not increase the smelting animation speed, but does increase the amount smelted at once
 - Increasing speed only works using whole numbers, like 2.0, 3.0, 4.0 -- This means you cannot achieve speeds like 0.5 or 1.5
 - The "Smelting Frequencies" config has no effect
@@ -39,7 +40,7 @@ Try using the Conveyor Stacks plugin or adjusting conveyor ConVars.
 
 #### When will this be available on uMod?
 
-I will try to contribute some of these fixes to the uMod version in April or May when I have time.
+I will try to contribute some of these fixes to the uMod version when I have time.
 
 ## Furnace short names
 

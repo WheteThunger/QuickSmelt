@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.11")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.12")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -382,7 +382,7 @@ namespace Oxide.Plugins
             public void Cook()
             {
                 var itemBurnable = FindBurnable();
-                if (Interface.CallHook("OnOvenCook", this, itemBurnable) != null)
+                if (Interface.CallHook("OnOvenCook", _oven, itemBurnable) != null)
                 {
                     return;
                 }
@@ -429,7 +429,7 @@ namespace Oxide.Plugins
                     }
                 }
 
-                Interface.CallHook("OnOvenCooked", this, itemBurnable, slot);
+                Interface.CallHook("OnOvenCooked", _oven, itemBurnable, slot);
             }
 
             private void ConsumeFuel(Item fuel, ItemModBurnable burnable)
