@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Oxide.Core;
 using UnityEngine;
@@ -7,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.12")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.13")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -16,6 +17,8 @@ namespace Oxide.Plugins
         private static QuickSmelt _instance;
 
         private const string PermissionUse = "quicksmelt.use";
+
+        private readonly object False = false;
 
         #endregion
 
@@ -113,6 +116,103 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Debug")]
             public bool Debug = false;
+
+            public void OnServerInitialized(QuickSmelt plugin)
+            {
+                foreach (var entry in OutputMultipliers.Values)
+                {
+                    ValidateItemNames(plugin, entry.Keys);
+                }
+
+                foreach (var entry in Whitelist.Values)
+                {
+                    ValidateItemNames(plugin, entry);
+                }
+
+                foreach (var entry in Blacklist.Values)
+                {
+                    ValidateItemNames(plugin, entry);
+                }
+
+                var validFurnaceShortNames = GetValidFurnaceShortNames();
+                var validDeployables = GetItemShortNameToDeployableShortName<BaseOven>();
+                ValidateFurnaceShortNames(plugin, validFurnaceShortNames, validDeployables, SpeedMultipliers.Keys);
+                ValidateFurnaceShortNames(plugin, validFurnaceShortNames, validDeployables, FuelSpeedMultipliers.Keys);
+                ValidateFurnaceShortNames(plugin, validFurnaceShortNames, validDeployables, FuelUsageMultipliers.Keys);
+                ValidateFurnaceShortNames(plugin, validFurnaceShortNames, validDeployables, OutputMultipliers.Keys);
+                ValidateFurnaceShortNames(plugin, validFurnaceShortNames, validDeployables, Whitelist.Keys);
+                ValidateFurnaceShortNames(plugin, validFurnaceShortNames, validDeployables, Blacklist.Keys);
+            }
+
+            private void ValidateItemNames(QuickSmelt plugin, IEnumerable<string> itemShortNameList)
+            {
+                foreach (var itemShortName in itemShortNameList)
+                {
+                    if (itemShortName != "global"
+                        && itemShortName != "item.shortname"
+                        && ItemManager.FindItemDefinition(itemShortName) == null)
+                    {
+                        plugin.PrintWarning($"[Configuration] {itemShortName} is not a valid item.");
+                    }
+                }
+            }
+
+            private void ValidateFurnaceShortNames(QuickSmelt plugin, HashSet<string> validFurnaceShortNames, Dictionary<string, string> validFurnaces, IEnumerable<string> shortNameList)
+            {
+                foreach (var shortName in shortNameList)
+                {
+                    if (shortName == "global" || shortName == "furnace.shortname" || validFurnaceShortNames.Contains(shortName))
+                        continue;
+
+                    var message = $"[Configuration] {shortName} is not a valid furnace short name.";
+
+                    // People often put item short names into the config where an entity short name is expected.
+                    // This will suggest the correct name to the user: electric.furnace -> electricfurnace.deployed
+                    string furnaceShortName;
+                    if (validFurnaces.TryGetValue(shortName, out furnaceShortName))
+                    {
+                        message += $" Did you mean {furnaceShortName}?";
+                    }
+
+                    plugin.PrintWarning(message);
+                }
+            }
+
+            private static HashSet<string> GetValidFurnaceShortNames()
+            {
+                var validShortNames = new HashSet<string>();
+
+                foreach (var prefabPath in GameManifest.Current.entities)
+                {
+                    var furnace = GameManager.server.FindPrefab(prefabPath)?.GetComponent<BaseOven>();
+                    if (furnace == null)
+                        continue;
+
+                    validShortNames.Add(furnace.ShortPrefabName);
+                }
+
+                return validShortNames;
+            }
+
+            private static Dictionary<string, string> GetItemShortNameToDeployableShortName<T>() where T : BaseEntity
+            {
+                var itemsToDeployables = new Dictionary<string, string>();
+
+                foreach (var itemDefinition in ItemManager.itemList)
+                {
+                    var itemModDeployable = itemDefinition.GetComponent<ItemModDeployable>();
+                    if (itemModDeployable == null)
+                        continue;
+
+                    var entity = itemModDeployable.entityPrefab.GetEntity() as T;
+                    if (entity == null)
+                        continue;
+
+                    itemsToDeployables[itemDefinition.shortname] = entity.ShortPrefabName;
+                }
+
+                return itemsToDeployables;
+            }
         }
 
         protected override void LoadConfig()
@@ -140,7 +240,7 @@ namespace Oxide.Plugins
 
         private void Unload()
         {
-            var ovens = UnityEngine.Object.FindObjectsOfType<BaseOven>();
+            var ovens = BaseNetworkable.serverEntities.OfType<BaseOven>().ToArray();
             PrintDebug($"Processing BaseOven(s).. Amount: {ovens.Length}.");
 
             for (var i = 0; i < ovens.Length; i++)
@@ -164,9 +264,10 @@ namespace Oxide.Plugins
         private void OnServerInitialized()
         {
             _instance = this;
+            _config.OnServerInitialized(this);
             permission.RegisterPermission(PermissionUse, this);
 
-            var ovens = UnityEngine.Object.FindObjectsOfType<BaseOven>();
+            var ovens = BaseNetworkable.serverEntities.OfType<BaseOven>().ToArray();
             PrintDebug($"Processing BaseOven(s).. Amount: {ovens.Length}.");
 
             for (var i = 0; i < ovens.Length; i++)
@@ -213,7 +314,7 @@ namespace Oxide.Plugins
                 return null;
 
             oven.gameObject.GetComponent<FurnaceController>().StartCooking();
-            return false;
+            return False;
         }
 
         private object OnOvenToggle(StorageContainer oven, BasePlayer player)
@@ -231,7 +332,9 @@ namespace Oxide.Plugins
             else
             {
                 if (canUse)
+                {
                     component.StartCooking();
+                }
                 else
                 {
                     PrintDebug($"No permission ({player.userID})");
@@ -239,7 +342,7 @@ namespace Oxide.Plugins
                 }
             }
 
-            return false;
+            return False;
         }
 
         #endregion
