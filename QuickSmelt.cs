@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.13")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.14")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -311,6 +311,9 @@ namespace Oxide.Plugins
         private object OnOvenStart(StorageContainer oven)
         {
             if (oven is BaseFuelLightSource)
+                return null;
+
+            if (!CanUse(oven.OwnerID))
                 return null;
 
             oven.gameObject.GetComponent<FurnaceController>().StartCooking();
