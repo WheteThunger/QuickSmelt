@@ -675,7 +675,8 @@ namespace Oxide.Plugins
 
                 PrintDebug($"Speed Multiplier: {_speedMultiplier}");
                 Furnace.InvokeRepeating(Cook, 0.5f, 0.5f);
-                Furnace.SetFlag(BaseEntity.Flags.On, true);
+                Furnace.SetFlagLocal(BaseEntity.Flags.On, true);
+                Furnace.SendNetworkUpdate_Flags();
             }
 
             public void StopCooking()
