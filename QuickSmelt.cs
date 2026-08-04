@@ -552,7 +552,7 @@ namespace Oxide.Plugins
                     var item = ItemManager.Create(def,
                         (int)(burnable.byproductAmount * OutputMultiplier(def.shortname) * Mathf.Min(_speedMultiplier, fuel.amount))); // It's fuel multiplier
 
-                    if (!item.MoveToContainer(Furnace.inventory))
+                    if (item != null && !item.MoveToContainer(Furnace.inventory))
                     {
                         StopCooking();
                         item.Drop(Furnace.inventory.dropPosition, Furnace.inventory.dropVelocity);
