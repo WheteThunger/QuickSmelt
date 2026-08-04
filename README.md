@@ -72,3 +72,7 @@ The following prefab short names are valid in the config.
 - `skull_fire_pit`
 - `small_refinery_static`
 - `tunalight.deployed`
+- `cookingworkbench`
+- `industrial.electric.furnace`
+- `industrial.furnace.large`
+- `apartment_large_furnace`
