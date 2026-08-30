@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.14")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.15")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -591,7 +591,7 @@ namespace Oxide.Plugins
                     if (item == null || !item.IsValid())
                         continue;
 
-                    var cookable = item.info.GetComponent<ItemModCookable>();
+                    var cookable = item.info.ItemModCookable;
                     if (cookable == null)
                         continue;
 
