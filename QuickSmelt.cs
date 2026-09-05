@@ -290,6 +290,8 @@ namespace Oxide.Plugins
                     }
 
                     var component = oven.gameObject.GetComponent<FurnaceController>();
+                    if (component == null)
+                        continue;
 
                     if (oven.IsDestroyed || !oven.IsOn() || !CanUse(oven.OwnerID))
                         continue;
