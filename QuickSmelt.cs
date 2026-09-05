@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.15")]
+    [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.16")]
     [Description("Increases the speed of the furnace smelting")]
     class QuickSmelt : RustPlugin
     {
@@ -247,6 +247,8 @@ namespace Oxide.Plugins
             {
                 var oven = ovens[i];
                 var component = oven.GetComponent<FurnaceController>();
+                if (component == null)
+                    continue;
 
                 if (oven.IsOn())
                 {
@@ -297,10 +299,9 @@ namespace Oxide.Plugins
             });
         }
 
-        private void OnEntitySpawned(BaseNetworkable entity)
+        private void OnEntitySpawned(BaseOven oven)
         {
-            var oven = entity as BaseOven;
-            if (oven == null)
+            if (oven == null || !IsSupportedFurnace(oven))
                 return;
 
             oven.gameObject.AddComponent<FurnaceController>();
@@ -308,9 +309,9 @@ namespace Oxide.Plugins
 
         // Electric furnaces can be started via electricity.
         // Normal furnaces can be started via igniter.
-        private object OnOvenStart(StorageContainer oven)
+        private object OnOvenStart(BaseOven oven)
         {
-            if (oven is BaseFuelLightSource)
+            if (!IsSupportedFurnace(oven))
                 return null;
 
             if (!CanUse(oven.OwnerID))
@@ -320,9 +321,9 @@ namespace Oxide.Plugins
             return False;
         }
 
-        private object OnOvenToggle(StorageContainer oven, BasePlayer player)
+        private object OnOvenToggle(BaseOven oven, BasePlayer player)
         {
-            if (oven is BaseFuelLightSource || oven.needsBuildingPrivilegeToUse && !player.CanBuild())
+            if (!IsSupportedFurnace(oven) || oven.needsBuildingPrivilegeToUse && !player.CanBuild())
                 return null;
 
             PrintDebug("OnOvenToggle called");
@@ -359,6 +360,14 @@ namespace Oxide.Plugins
         {
             if (_config.Debug)
                 Debug.Log($"DEBUG ({_instance.Name}) > " + message);
+        }
+
+        private bool IsSupportedFurnace(BaseOven oven)
+        {
+            if (oven is BaseFuelLightSource or Composter)
+                return false;
+
+            return true;
         }
 
         #endregion
