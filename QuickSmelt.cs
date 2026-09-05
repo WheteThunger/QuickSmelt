@@ -10,7 +10,7 @@ namespace Oxide.Plugins
 {
     [Info("Quick Smelt", "misticos + WhiteThunder", "5.1.16")]
     [Description("Increases the speed of the furnace smelting")]
-    class QuickSmelt : RustPlugin
+    internal class QuickSmelt : RustPlugin
     {
         #region Variables
 
@@ -32,86 +32,86 @@ namespace Oxide.Plugins
             public bool UsePermission = true;
 
             [JsonProperty(PropertyName = "Speed Multipliers", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, float> SpeedMultipliers = new Dictionary<string, float>
+            public Dictionary<string, float> SpeedMultipliers = new()
             {
                 { "global", 1.0f },
-                { "furnace.shortname", 1.0f }
+                { "furnace.shortname", 1.0f },
             };
 
             [JsonProperty(PropertyName = "Fuel Usage Speed Multipliers",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, float> FuelSpeedMultipliers = new Dictionary<string, float>
+            public Dictionary<string, float> FuelSpeedMultipliers = new()
             {
                 { "global", 1.0f },
-                { "furnace.shortname", 1.0f }
+                { "furnace.shortname", 1.0f },
             };
 
             [JsonProperty(PropertyName = "Fuel Usage Multipliers",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, int> FuelUsageMultipliers = new Dictionary<string, int>
+            public Dictionary<string, int> FuelUsageMultipliers = new()
             {
                 { "global", 1 },
-                { "furnace.shortname", 1 }
+                { "furnace.shortname", 1 },
             };
 
             [JsonProperty(PropertyName = "Output Multipliers", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<string, Dictionary<string, float>> OutputMultipliers =
-                new Dictionary<string, Dictionary<string, float>>
+                new()
                 {
                     {
                         "global", new Dictionary<string, float>
                         {
-                            { "global", 1.0f }
+                            { "global", 1.0f },
                         }
                     },
                     {
                         "furnace.shortname", new Dictionary<string, float>
                         {
-                            { "item.shortname", 1.0f }
+                            { "item.shortname", 1.0f },
                         }
-                    }
+                    },
                 };
 
             [JsonProperty(PropertyName = "Whitelist", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, List<string>> Whitelist = new Dictionary<string, List<string>>
+            public Dictionary<string, List<string>> Whitelist = new()
             {
                 {
                     "global", new List<string>
                     {
-                        "item.shortname"
+                        "item.shortname",
                     }
                 },
                 {
                     "furnace.shortname", new List<string>
                     {
-                        "item.shortname"
+                        "item.shortname",
                     }
-                }
+                },
             };
 
             [JsonProperty(PropertyName = "Blacklist", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, List<string>> Blacklist = new Dictionary<string, List<string>>
+            public Dictionary<string, List<string>> Blacklist = new()
             {
                 {
                     "global", new List<string>
                     {
-                        "item.shortname"
+                        "item.shortname",
                     }
                 },
                 {
                     "furnace.shortname", new List<string>
                     {
-                        "item.shortname"
+                        "item.shortname",
                     }
-                }
+                },
             };
 
             [JsonProperty(PropertyName = "Smelting Frequencies (Smelt items every N smelting ticks)",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, int> SmeltingFrequencies = new Dictionary<string, int>
+            public Dictionary<string, int> SmeltingFrequencies = new()
             {
                 { "global", 1 },
-                { "furnace.shortname", 1 }
+                { "furnace.shortname", 1 },
             };
 
             [JsonProperty(PropertyName = "Debug")]
@@ -168,8 +168,7 @@ namespace Oxide.Plugins
 
                     // People often put item short names into the config where an entity short name is expected.
                     // This will suggest the correct name to the user: electric.furnace -> electricfurnace.deployed
-                    string furnaceShortName;
-                    if (validFurnaces.TryGetValue(shortName, out furnaceShortName))
+                    if (validFurnaces.TryGetValue(shortName, out var furnaceShortName))
                     {
                         message += $" Did you mean {furnaceShortName}?";
                     }
@@ -243,9 +242,8 @@ namespace Oxide.Plugins
             var ovens = BaseNetworkable.serverEntities.OfType<BaseOven>().ToArray();
             PrintDebug($"Processing BaseOven(s).. Amount: {ovens.Length}.");
 
-            for (var i = 0; i < ovens.Length; i++)
+            foreach (var oven in ovens)
             {
-                var oven = ovens[i];
                 var component = oven.GetComponent<FurnaceController>();
                 if (component == null)
                     continue;
@@ -272,22 +270,17 @@ namespace Oxide.Plugins
             var ovens = BaseNetworkable.serverEntities.OfType<BaseOven>().ToArray();
             PrintDebug($"Processing BaseOven(s).. Amount: {ovens.Length}.");
 
-            for (var i = 0; i < ovens.Length; i++)
+            foreach (var oven in ovens)
             {
-                var oven = ovens[i];
-
                 OnEntitySpawned(oven);
             }
 
             timer.Once(1f, () =>
             {
-                for (var i = 0; i < ovens.Length; i++)
+                foreach (var oven in ovens)
                 {
-                    var oven = ovens[i];
                     if (oven == null)
-                    {
                         continue;
-                    }
 
                     var component = oven.gameObject.GetComponent<FurnaceController>();
                     if (component == null)
@@ -401,12 +394,11 @@ namespace Oxide.Plugins
 
             private Dictionary<string, float> _outputModifiers;
 
-            private List<Item> _itemsToCook = new List<Item>();
+            private List<Item> _itemsToCook = new();
 
             private float OutputMultiplier(string shortname)
             {
-                float modifier;
-                if (_outputModifiers == null || !_outputModifiers.TryGetValue(shortname, out modifier) &&
+                if (_outputModifiers == null || !_outputModifiers.TryGetValue(shortname, out var modifier) &&
                     !_outputModifiers.TryGetValue("global", out modifier))
                     modifier = 1.0f;
 
@@ -432,10 +424,7 @@ namespace Oxide.Plugins
             {
                 // Well, sorry for my complicated code. But that should work faster! :)
 
-                float modifierF; // float modifier
-                int modifierI; // int modifier
-
-                if (!_config.SpeedMultipliers.TryGetValue(Furnace.ShortPrefabName, out modifierF) &&
+                if (!_config.SpeedMultipliers.TryGetValue(Furnace.ShortPrefabName, out var modifierF) &&
                     !_config.SpeedMultipliers.TryGetValue("global", out modifierF))
                     modifierF = 1.0f;
 
@@ -447,7 +436,7 @@ namespace Oxide.Plugins
 
                 _fuelSpeedMultiplier = modifierF;
 
-                if (!_config.FuelUsageMultipliers.TryGetValue(Furnace.ShortPrefabName, out modifierI) &&
+                if (!_config.FuelUsageMultipliers.TryGetValue(Furnace.ShortPrefabName, out var modifierI) &&
                     !_config.FuelUsageMultipliers.TryGetValue("global", out modifierI))
                     modifierI = 1;
 
@@ -481,9 +470,7 @@ namespace Oxide.Plugins
 
                 var burnable = Interface.Call<Item>("OnFindBurnable", _oven);
                 if (burnable != null)
-                {
                     return burnable;
-                }
 
                 foreach (var item in Furnace.inventory.itemList)
                 {
@@ -500,9 +487,7 @@ namespace Oxide.Plugins
             {
                 var itemBurnable = FindBurnable();
                 if (Interface.CallHook("OnOvenCook", _oven, itemBurnable) != null)
-                {
                     return;
-                }
 
                 if (itemBurnable == null && !Furnace.CanRunWithNoFuel)
                 {
@@ -552,9 +537,7 @@ namespace Oxide.Plugins
             private void ConsumeFuel(Item fuel, ItemModBurnable burnable)
             {
                 if (Interface.CallHook("OnFuelConsume", _oven, fuel, burnable) != null)
-                {
                     return;
-                }
 
                 if (Furnace.allowByproductCreation && burnable.byproductItem != null && fuel.amount > 0 &&
                     Random.Range(0f, 1f) > burnable.byproductChance)
