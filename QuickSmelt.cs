@@ -222,9 +222,9 @@ internal class QuickSmelt : RustPlugin
             _config = Config.ReadObject<Configuration>();
             if (_config == null) throw new Exception();
         }
-        catch
+        catch (Exception ex)
         {
-            PrintError("Your configuration file contains an error. Using default configuration values.");
+            PrintError($"Your configuration file contains an error. Using default configuration values. {ex}");
             LoadDefaultConfig();
         }
     }
